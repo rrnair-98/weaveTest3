@@ -1,0 +1,21 @@
+syntax = "proto3";
+package proto;
+option go_package = "internal/proto/generated";
+
+service GithubSearchService {
+  rpc Search(SearchRequest) returns (SearchResponse);
+}
+
+message SearchRequest {
+  string search_term = 1;
+  string user = 2;
+}
+
+message SearchResponse {
+  repeated Result results = 1;
+}
+
+message Result {
+  string file_url = 1;
+  string repo = 2;
+}
