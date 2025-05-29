@@ -24,7 +24,7 @@ func main() {
 	e := config.GetEnv()
 	rate_limiter.InitGitHubRateLimiter(logger, e.GitToken, e.Paginator.BlockingRateLimited)
 	client.InitSinglePagePaginator(logger, nil)
-	client.InitMultiPagePaginator(logger, nil)
+	client.InitMultiPagePaginator(logger, nil, e.Paginator)
 	logger.Debug("paginator conf: ", zap.Bool("rateLimiterEnabled", e.Paginator.BlockingRateLimited), zap.String("kind", e.Paginator.Kind), zap.Int("maxPages", e.Paginator.MaxPages), zap.Int("perPage", e.Paginator.PerPage), zap.Bool("fetchAllPages", e.Paginator.FetchAllPages))
 
 	// TODO: add command line args for port and githubToken

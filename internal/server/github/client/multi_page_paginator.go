@@ -24,33 +24,34 @@ func GetMultiPagePaginator() *MultiPagePaginator {
 
 // InitMultiPagePaginator initializes the singleton instance of MultiPagePaginator, if RequestMaker is nil it will be
 // set to the default RequestMaker.
-func InitMultiPagePaginator(logger *zap.Logger, requestMaker RequestMaker) {
+func InitMultiPagePaginator(logger *zap.Logger, requestMaker RequestMaker, paginationConf config.Pagination) {
 	mppOnce.Do(func() {
 		mppMu.Lock()
-		instance = newMultiPagePaginator(logger, requestMaker)
+		instance = newMultiPagePaginator(logger, requestMaker, paginationConf)
 		mppMu.Unlock()
 	})
 }
 
-func newMultiPagePaginator(logger *zap.Logger, requestMaker RequestMaker) *MultiPagePaginator {
+func newMultiPagePaginator(logger *zap.Logger, requestMaker RequestMaker, paginationConf config.Pagination) *MultiPagePaginator {
 	if requestMaker == nil {
 		requestMaker = NewDefaultRequestMaker(logger)
 	}
 	return &MultiPagePaginator{
-		logger:       logger,
-		requestMaker: requestMaker,
+		logger:         logger,
+		requestMaker:   requestMaker,
+		paginationConf: paginationConf,
 	}
 }
 
 type MultiPagePaginator struct {
-	logger       *zap.Logger
-	requestMaker RequestMaker
+	logger         *zap.Logger
+	requestMaker   RequestMaker
+	paginationConf config.Pagination
 }
 
 func (m *MultiPagePaginator) Paginate(ctx context.Context, request *generated.SearchRequest) (*generated.SearchResponse, appError.AppError) {
-	env := config.GetEnv()
-	maxConfigPages := env.Paginator.MaxPages
-	perPage := env.Paginator.PerPage
+	maxConfigPages := m.paginationConf.MaxPages
+	perPage := m.paginationConf.PerPage
 
 	// If perPage is not set or invalid, use default
 	if perPage <= 0 || perPage > 100 {
