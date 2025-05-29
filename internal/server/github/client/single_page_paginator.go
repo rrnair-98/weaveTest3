@@ -22,25 +22,28 @@ type SinglePagePaginator struct {
 }
 
 // GetSinglePagePaginator returns the singleton instance of SinglePagePaginator
-func GetSinglePagePaginator(logger *zap.Logger, maker RequestMaker) *SinglePagePaginator {
-	sppOnce.Do(func() {
-		sppMu.Lock()
-		defer sppMu.Unlock()
-		if maker == nil {
-			maker = NewDefaultRequestMaker(logger)
-		}
-		singleInstance = &SinglePagePaginator{
-			logger:       logger,
-			requestMaker: maker,
-		}
-	})
-
+func GetSinglePagePaginator() *SinglePagePaginator {
 	return singleInstance
 }
 
-// DefaultSinglePagePaginator initializes and returns a default SinglePagePaginator with logger and default RequestMaker.
-func DefaultSinglePagePaginator(logger *zap.Logger) *SinglePagePaginator {
-	return GetSinglePagePaginator(logger, nil)
+func InitSinglePagePaginator(logger *zap.Logger, maker RequestMaker) {
+	sppOnce.Do(func() {
+		sppMu.Lock()
+		defer sppMu.Unlock()
+		singleInstance = newSinglePagePaginator(logger, maker)
+	})
+}
+
+// newSinglePagePaginator initializes and returns a SinglePagePaginator with the given logger and RequestMaker.
+// If the RequestMaker is nil, it defaults to a NewDefaultRequestMaker with the specified logger.
+func newSinglePagePaginator(logger *zap.Logger, maker RequestMaker) *SinglePagePaginator {
+	if maker == nil {
+		maker = NewDefaultRequestMaker(logger)
+	}
+	return &SinglePagePaginator{
+		logger:       logger,
+		requestMaker: maker,
+	}
 }
 
 // Paginate executes a single-page pagination for search requests, fetching and returning search results or an AppError.

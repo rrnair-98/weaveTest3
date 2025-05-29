@@ -18,9 +18,9 @@ func NewDataFetcher(logger zap.Logger) *RepositoryDataFetcher {
 	// uses default single page paginator
 	env := config.GetEnv()
 	if env.Paginator.IsMultiPage() {
-		return NewDataFetcherWithPagination(logger, internal.DefaultMultiPagePaginator(&logger))
+		return NewDataFetcherWithPagination(logger, internal.GetMultiPagePaginator())
 	}
-	return NewDataFetcherWithPagination(logger, internal.DefaultSinglePagePaginator(&logger))
+	return NewDataFetcherWithPagination(logger, internal.GetSinglePagePaginator())
 }
 
 func NewDataFetcherWithPagination(logger zap.Logger, paginator internal.Paginator) *RepositoryDataFetcher {

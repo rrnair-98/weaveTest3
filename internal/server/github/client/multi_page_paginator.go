@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
 	"io"
 	"sync"
 	"weaveTest/internal/config"
@@ -17,28 +18,28 @@ var (
 )
 
 // GetMultiPagePaginator returns the singleton instance of MultiPagePaginator
-func GetMultiPagePaginator(logger *zap.Logger, requestMaker RequestMaker) *MultiPagePaginator {
-	mppOnce.Do(func() {
-		mppMu.Lock()
-		if requestMaker == nil {
-			requestMaker = NewDefaultRequestMaker(logger)
-		}
-		instance = &MultiPagePaginator{
-			logger:       logger,
-			requestMaker: requestMaker,
-		}
-		mppMu.Unlock()
-	})
+func GetMultiPagePaginator() *MultiPagePaginator {
 	return instance
 }
 
-// InitMultiPagePaginator initializes the singleton instance of MultiPagePaginator
+// InitMultiPagePaginator initializes the singleton instance of MultiPagePaginator, if RequestMaker is nil it will be
+// set to the default RequestMaker.
 func InitMultiPagePaginator(logger *zap.Logger, requestMaker RequestMaker) {
-	GetMultiPagePaginator(logger, requestMaker)
+	mppOnce.Do(func() {
+		mppMu.Lock()
+		instance = newMultiPagePaginator(logger, requestMaker)
+		mppMu.Unlock()
+	})
 }
 
-func DefaultMultiPagePaginator(logger *zap.Logger) *MultiPagePaginator {
-	return GetMultiPagePaginator(logger, nil)
+func newMultiPagePaginator(logger *zap.Logger, requestMaker RequestMaker) *MultiPagePaginator {
+	if requestMaker == nil {
+		requestMaker = NewDefaultRequestMaker(logger)
+	}
+	return &MultiPagePaginator{
+		logger:       logger,
+		requestMaker: requestMaker,
+	}
 }
 
 type MultiPagePaginator struct {
@@ -128,6 +129,10 @@ func (m *MultiPagePaginator) Paginate(ctx context.Context, request *generated.Se
 			break
 		}
 		_, paginatedResponse, err := handleResponseBodyBytes(pageBody, pageRes.StatusCode, pageUrl, m.logger)
+		if err != nil && err.GrpcStatus() == codes.ResourceExhausted {
+			m.logger.Warn("rate limit exceeded, stopping pagination", zap.Int("page", pageNum), zap.Error(err))
+			break
+		}
 		if err != nil {
 			m.logger.Error("failed to handle page response", zap.Int("page", pageNum), zap.Error(err))
 			break

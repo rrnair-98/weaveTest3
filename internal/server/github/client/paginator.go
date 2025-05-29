@@ -89,8 +89,8 @@ func handleHttpErrors(statusCode int, body []byte, url string, logger *zap.Logge
 		return appError.NewRemoteError(fmt.Errorf("query string was wrongly formatted: %s", url), statusCode, string(body))
 	case http.StatusGatewayTimeout:
 		return appError.NewRemoteError(fmt.Errorf("gateway timed out for the search API"), statusCode, "")
-	case http.StatusTooManyRequests:
-		return appError.NewRemoteError(fmt.Errorf("rate limit exceeded"), statusCode, "")
+	case http.StatusTooManyRequests, http.StatusForbidden:
+		return appError.NewRemoteError(fmt.Errorf("rate limit exceeded"), statusCode, string(body))
 	case http.StatusUnauthorized:
 		return appError.NewRemoteError(fmt.Errorf("unauthorized, the token being used could either have expired or is invalid"), statusCode, string(body))
 	case http.StatusUnprocessableEntity:

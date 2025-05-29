@@ -7,7 +7,7 @@ var httpToGRPCStatusCode = make(map[int]codes.Code)
 func initHttpToGRPCStatusCodeMap() {
 	httpToGRPCStatusCode[400] = codes.InvalidArgument
 	httpToGRPCStatusCode[401] = codes.Unauthenticated
-	httpToGRPCStatusCode[403] = codes.PermissionDenied
+	httpToGRPCStatusCode[403] = codes.ResourceExhausted
 	httpToGRPCStatusCode[404] = codes.NotFound
 	httpToGRPCStatusCode[405] = codes.Unimplemented
 	httpToGRPCStatusCode[406] = codes.ResourceExhausted
