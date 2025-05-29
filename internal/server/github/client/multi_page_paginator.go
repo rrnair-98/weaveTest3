@@ -90,7 +90,6 @@ func (m *MultiPagePaginator) Paginate(ctx context.Context, request *generated.Se
 	if maxConfigPages > 0 && pagesToFetch > maxConfigPages {
 		pagesToFetch = maxConfigPages
 	}
-	m.logger.Debug("pages to fetch calculated", zap.Int("pagesToFetch", pagesToFetch))
 
 	m.logger.Debug("pagination details",
 		zap.Int("totalCount", totalCount),

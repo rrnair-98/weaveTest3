@@ -2,10 +2,9 @@ package main
 
 import (
 	"go.uber.org/zap"
-	"time"
 	"weaveTest/internal/config"
 	"weaveTest/internal/server"
-	"weaveTest/internal/server/github/client"
+	"weaveTest/internal/server/github/client/rate_limiter"
 )
 
 func main() {
@@ -16,18 +15,14 @@ func main() {
 	defer logger.Sync()
 
 	// since we need a logger instance
-	client.InitRateLimiter(9, time.Minute, logger)
 	err = config.InitEnvFromFile("./.env.json")
 	if err != nil {
 		logger.Error("failed to load env file", zap.Error(err))
 		panic(err)
 	}
 	e := config.GetEnv()
-	logger.Debug("paginator conf: ", zap.Bool("rateLimiterEnabled", e.Paginator.RateLimited), zap.String("kind", e.Paginator.Kind), zap.Int("maxPages", e.Paginator.MaxPages), zap.Int("perPage", e.Paginator.PerPage), zap.Bool("fetchAllPages", e.Paginator.FetchAllPages))
-	if err != nil {
-		logger.Error("failed to load env file", zap.Error(err))
-		panic(err)
-	}
+	rate_limiter.InitGitHubRateLimiter(logger, e.GitToken, e.Paginator.BlockingRateLimited)
+	logger.Debug("paginator conf: ", zap.Bool("rateLimiterEnabled", e.Paginator.BlockingRateLimited), zap.String("kind", e.Paginator.Kind), zap.Int("maxPages", e.Paginator.MaxPages), zap.Int("perPage", e.Paginator.PerPage), zap.Bool("fetchAllPages", e.Paginator.FetchAllPages))
 
 	// TODO: add command line args for port and githubToken
 	serverInstance := server.NewServerWithDefaultPort(logger)

@@ -13,7 +13,6 @@ import (
 
 const (
 	httpMethod = "GET"
-	bearerFmt  = "Bearer %s"
 )
 
 // Paginator provides functionality for paginating search results based on a given search request and context.

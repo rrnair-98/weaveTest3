@@ -19,11 +19,11 @@ type Env struct {
 }
 
 type Pagination struct {
-	Kind          string `json:"kind"`            // either of single or multi, single fetches one page, multi fetches all pages up to max_pages
-	MaxPages      int    `json:"max_pages"`       // if FetchAllPages is false, this is the max number of pages to fetch
-	PerPage       int    `json:"per_page"`        // Entries per page, max of 100
-	FetchAllPages bool   `json:"fetch_all_pages"` // if set ignores MaxPages
-	RateLimited   bool   `json:"rate_limited"`    // if set enables the rate limiter
+	Kind                string `json:"kind"`                  // either of single or multi, single fetches one page, multi fetches all pages up to max_pages
+	MaxPages            int    `json:"max_pages"`             // if FetchAllPages is false, this is the max number of pages to fetch
+	PerPage             int    `json:"per_page"`              // Entries per page, max of 100
+	FetchAllPages       bool   `json:"fetch_all_pages"`       // if set ignores MaxPages
+	BlockingRateLimited bool   `json:"blocking_rate_limited"` // if set blocks the caller until the rate limit resets, requests are passed through otherwise
 }
 
 func (p *Pagination) IsSinglePage() bool {
